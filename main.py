@@ -31,6 +31,9 @@ def read_root():
 def get_coordinates(location_name:str):
 
     response = geocoder_service.forward(location_name)
+
+    if not json_response.get("features"):
+        return {"detail": "Not Found"}
     first_result = response.json().get("features")[0]
     return {
         "place_name": first_result.get("place_name"),
