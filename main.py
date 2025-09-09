@@ -29,12 +29,13 @@ def read_root():
 
 @app.get("/coordinates/{location_name}")
 def get_coordinates(location_name:str):
-
     response = geocoder_service.forward(location_name)
+    json_response = response.json()
 
     if not json_response.get("features"):
         return {"detail": "Not Found"}
-    first_result = response.json().get("features")[0]
+    
+    first_result = json_response.get("features")[0]
     return {
         "place_name": first_result.get("place_name"),
         "coordinates": first_result.get("geometry").get("coordinates")
