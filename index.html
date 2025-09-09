@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mapbox Geocoding Example</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #search-box {
+            position: absolute;
+            z-index: 10;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="search-box">
+        <input type="text" id="locationInput" placeholder="Enter a location">
+        <button type="button" onclick="getCoordinatesAndShowMap()">Search</button>
+        <button type="button" onclick="getCurrentLocation()">Use My Location</button>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYWxwaGEtY29kZXItMjIiLCJhIjoiY21mYXd1ZGF4MXAxcjJsczl2MnIxMmlsNCJ9.CyCnY9Z_67HOaYmiKVI5BA';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [0, 0],
+            zoom: 1
+        });
+
+        async function getCoordinatesAndShowMap() {
+            const locationName = document.getElementById('locationInput').value;
+
+            // Check if the input is empty
+            if (!locationName) {
+                alert('Please enter a location name.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/coordinates/${locationName}`);
+                const data = await response.json();
+
+                // Check for a "Not Found" error from the server
+                if (data.detail && data.detail === "Not Found") {
+                    alert("Location not found. Please try another search term.");
+                    return;
+                }
+
+                const coordinates = data.coordinates;
+
+                // Fly to the new location
+                map.flyTo({
+                    center: coordinates,
+                    zoom: 10
+                });
+
+                // Add a marker for the location
+                new mapboxgl.Marker()
+                    .setLngLat(coordinates)
+                    .addTo(map);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                alert('An error occurred. Make sure your FastAPI server is running.');
+            }
+        }
+
+        function getCurrentLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // Fly to the user's current location
+                    map.flyTo({
+                        center: [lon, lat],
+                        zoom: 10
+                    });
+
+                    // Add a marker for the current location
+                    new mapboxgl.Marker()
+                        .setLngLat([lon, lat])
+                        .addTo(map);
+                }, (error) => {
+                    console.error("Geolocation error:", error);
+                    alert("Could not get your location. Please ensure you have enabled location services.");
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+    </script>
+
+</body>
+
+</html>
