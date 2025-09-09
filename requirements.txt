@@ -1,5 +1,4 @@
 fastapi
 uvicorn
-os
-dotenv
-corsmiddleware
+python-dotenv
+mapbox
