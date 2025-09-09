@@ -3,6 +3,8 @@ from mapbox import Geocoder
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 
 load_dotenv()
 
@@ -16,6 +18,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
+
 
 
 @app.get("/")
