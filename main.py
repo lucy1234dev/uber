@@ -18,7 +18,9 @@ app.add_middleware(
 )
 
 
-
+@app.get("/")
+def read_root():
+    return{}
 
 @app.get("/coordinates/{location_name}")
 def get_coordinates(location_name:str):
